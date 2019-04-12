@@ -38,18 +38,29 @@ urlinfo_t *parse_url(char *url)
     {
         url = protocol_signifier + 3;
     }
-    // Determine position of port and path, handle errors
+    // Determine position of port and path
     char *index_port = strchr(url, ':');
-    char *index_path = strchr(index_port, '/');
-    if(NULL == index_port || NULL == index_path)
+    char *index_path = strchr(url, '/');
+    if(NULL == index_path)
     {
-        printf("Urls must include both a port and a path");
-        exit(1);
+        index_path = url+strlen(url);
     }
     // Populate struct from string
+    if(NULL == index_port)
+    {
+        index_port = index_path;
+        strcpy(urlinfo->port, "80");
+    }
+    else
+    {
+        strncpy(urlinfo->port, index_port+1, (index_path - index_port) -1);
+    }
     strncpy(urlinfo->hostname, url, index_port - url);
-    strncpy(urlinfo->port, index_port+1, (index_path - index_port) -1);
     urlinfo->path = strdup(index_path+1);
+    // Diagnostics
+    // printf("Host: %s\n", urlinfo->hostname);
+    // printf("Port: %s\n", urlinfo->port);
+    // printf("Path: %s\n", urlinfo->path);
     // Return resultant struct
     return urlinfo;
 }
@@ -81,7 +92,7 @@ int send_request(int fd, char *hostname, char *port, char *path)
     char *HTTP_GET_FORMAT =
         "GET /%s HTTP/1.1\n"
         "Host: %s:%s\n"
-        "Connection: close\n";
+        "Connection: close\n\n";
     rv = sprintf(request, HTTP_GET_FORMAT, path, hostname, port);
     // Handle write errors
     if(rv < 0)

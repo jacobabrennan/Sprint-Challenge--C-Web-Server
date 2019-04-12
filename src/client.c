@@ -66,15 +66,24 @@ urlinfo_t *parse_url(char *url)
 */
 int send_request(int fd, char *hostname, char *port, char *path)
 {
-  const int max_request_size = 16384;
-  char request[max_request_size];
-  int rv;
-
-  ///////////////////
-  // IMPLEMENT ME! //
-  ///////////////////
-
-  return 0;
+    // Initialize variables
+    const int max_request_size = 16384;
+    char request[max_request_size];
+    int rv;
+    // Construct Request
+    char *HTTP_GET_FORMAT =
+        "GET /%s HTTP/1.1\n"
+        "Host: %s:%s\n"
+        "Connection: close\n";
+    rv = sprintf(request, HTTP_GET_FORMAT, path, hostname, port);
+    // Handle write errors
+    if(rv < 0)
+    {
+        printf("A problem was encountered writing to the buffer.\n");
+        exit(2);
+    }
+    // Send request
+    return (int) send(fd, request, rv, 0);
 }
 
 int main(int argc, char *argv[])

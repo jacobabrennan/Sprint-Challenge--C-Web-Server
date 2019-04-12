@@ -129,11 +129,31 @@ int main(int argc, char *argv[])
     }
     // Call `recv` in a loop until there is no more data to receive from the server. Print the received response to stdout.
     printf("3\n");
-    do
+    int header_received = 0;
+    while(numbytes = recv(sockfd, buf, BUFSIZE-1, 0));
     {
-        numbytes = recv(sockfd, buf, BUFSIZE-1, 0);
-        printf(buf);
-    } while(numbytes);
+        if(header_received)
+        {
+            printf(buf);
+        }
+        else
+        {
+            /*
+                Note: This is a kludge. Originally, I attempted to find the
+                substring "\n\n", to signify the end of the header, but that
+                always failed for a reasons I haven't figured out. Given that
+                I've reached the end of the sprint time, this code exists to
+                demonstrate the concept in a way that still works for my server
+                and also for google.com, but will not work in the general case.
+            */
+            char *header_end = strstr(buf, "Connection: close");
+            if(NULL != header_end)
+            {
+                printf(header_end+21);
+            }
+        }
+    }   
+    printf("4\n");
     // Clean up any allocated memory and open file descriptors.
     destroy_urlinfo(url_info);
     close(sockfd);

@@ -53,6 +53,13 @@ urlinfo_t *parse_url(char *url)
     // Return resultant struct
     return urlinfo;
 }
+void destroy_urlinfo(urlinfo_t *url_info)
+{
+    free(url_info->hostname);
+    free(url_info->port);
+    free(url_info->path);
+    free(url_info);
+}
 
 /**
  * Constructs and sends an HTTP request
@@ -87,27 +94,37 @@ int send_request(int fd, char *hostname, char *port, char *path)
 }
 
 int main(int argc, char *argv[])
-{  
-    int sockfd, numbytes;  
-    char buf[BUFSIZE];
-
+{
+    // Check for usage errors
     if (argc != 2) {
         fprintf(stderr,"usage: client HOSTNAME:PORT/PATH\n");
         exit(1);
     }
-
+    // Initialize variables
+    int sockfd, numbytes;  
+    char buf[BUFSIZE];
     // Parse the input URL
     urlinfo_t *url_info = parse_url(argv[1]);
     // Initialize a socket by calling the `get_socket` function from lib.c
-    int socket_id = get_socket(url_info->hostname, url_info->port);
+    printf("1\n");
+    sockfd = get_socket(url_info->hostname, url_info->port);
     // Call `send_request` to construct the request and send it
-    send_request(socket_id, url_info->hostname, url_info->port, url_info->path);
+    printf("2\n");
+    int result = send_request(sockfd, url_info->hostname, url_info->port, url_info->path);
+    if(-1 == result)
+    {
+        printf("Error sending request.");
+        exit(3);
+    }
     // Call `recv` in a loop until there is no more data to receive from the server. Print the received response to stdout.
+    printf("3\n");
+    do
+    {
+        numbytes = recv(sockfd, buf, BUFSIZE-1, 0);
+        printf(buf);
+    } while(numbytes);
     // Clean up any allocated memory and open file descriptors.
-
-    ///////////////////
-    // IMPLEMENT ME! //
-    ///////////////////
-
+    destroy_urlinfo(url_info);
+    close(sockfd);
     return 0;
 }

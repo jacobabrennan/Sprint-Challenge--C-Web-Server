@@ -117,10 +117,8 @@ int main(int argc, char *argv[])
     // Parse the input URL
     urlinfo_t *url_info = parse_url(argv[1]);
     // Initialize a socket by calling the `get_socket` function from lib.c
-    printf("1\n");
     sockfd = get_socket(url_info->hostname, url_info->port);
     // Call `send_request` to construct the request and send it
-    printf("2\n");
     int result = send_request(sockfd, url_info->hostname, url_info->port, url_info->path);
     if(-1 == result)
     {
@@ -128,7 +126,6 @@ int main(int argc, char *argv[])
         exit(3);
     }
     // Call `recv` in a loop until there is no more data to receive from the server. Print the received response to stdout.
-    printf("3\n");
     int header_received = 0;
     while(numbytes = recv(sockfd, buf, BUFSIZE-1, 0));
     {
@@ -152,8 +149,7 @@ int main(int argc, char *argv[])
                 printf(header_end+21);
             }
         }
-    }   
-    printf("4\n");
+    }
     // Clean up any allocated memory and open file descriptors.
     destroy_urlinfo(url_info);
     close(sockfd);
